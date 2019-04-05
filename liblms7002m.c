@@ -177,9 +177,11 @@ int lms7_ldo_enable(struct lms7_state* st, bool enable)
 	uint32_t lod_regs[] = {
 		MAKE_LMS7002_0x0092( 0, 0, 0, 0, e, e, 0, e, 0, 0, 0, e, 0, e, 0, e),
 		MAKE_LMS7002_0x0093( 0, 0, 0, 0, 0, 0, 0, e, e, 0, e, e, 0, 0, 0, e),
+		MAKE_LMS7002_0x0095( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ),
+		MAKE_LMS7002_0x0096( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ),
 		MAKE_LMS7002_0x00A6( 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1),
-		MAKE_LMS7002_0x00A1( 101, 140 ),
-		MAKE_LMS7002_0x00A4( 140, 101 ),
+		MAKE_LMS7002_0x00A1( 101, 101 ),
+		MAKE_LMS7002_0x00A4( 101, 101 ),
 	};
 	return lms7_spi_post(st, REG_COUNT(lod_regs), lod_regs);
 }
@@ -1293,6 +1295,8 @@ int lms7_rbb_set_lpfx_bandwidth(struct lms7_state* st, unsigned bw)
 int lms7_rbb_set_bandwidth(struct lms7_state* st, unsigned bw)
 {
 	int res;
+	if (bw < 100000)
+		bw = 100000;
 
 	int cfb_tia_rfe = (int)(1680000000U/bw - 10);
 	int ccomp_tia_rfe = cfb_tia_rfe/100;
@@ -1343,6 +1347,14 @@ int lms7_rbb_set_pga(struct lms7_state* st, unsigned gain)
 	uint32_t regs[] = {
 		MAKE_LMS7002_0x0119(0, 20, 20, gain),
 		MAKE_LMS7002_0x011A(rcc_ctl, c_ctl)
+	};
+	return lms7_spi_post(st, REG_COUNT(regs), regs);
+}
+
+int lms7_rbb_set_ext(struct lms7_state* st)
+{
+	uint32_t regs[] = {
+		MAKE_LMS7002_0x0119(1, 20, 20, 1)
 	};
 	return lms7_spi_post(st, REG_COUNT(regs), regs);
 }
